@@ -1,0 +1,34 @@
+dataset:
+  name: HAI_23.05
+  root: data/raw/HAI_Kaggle/hai-23.05
+
+training:
+  files:
+    - hai-train1.csv
+    - hai-train2.csv
+    - hai-train3.csv
+
+validation:
+  files:
+    - hai-train4.csv
+
+test:
+  sensor_files:
+    - hai-test1.csv
+    - hai-test2.csv
+  label_files:
+    - label-test1.csv
+    - label-test2.csv
+
+preprocessing:
+  normalization: standard
+  fit_on_training_only: true
+  keep_all_features: true
+
+windowing:
+  sequence_length: 60
+  stride: 1
+  cross_file_boundaries: false
+
+evaluation:
+  threshold_method: validation
