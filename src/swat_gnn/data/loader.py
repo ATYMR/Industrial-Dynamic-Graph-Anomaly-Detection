@@ -10,8 +10,32 @@ def load_config(config_path: str = "configs/data.yaml") -> dict:
         return yaml.safe_load(f)
 
 
+def get_dataset_root(config: dict) -> Path:
+    """
+    Resolve dataset root relative to the project root.
+
+    This prevents problems when the notebook is executed
+    from the notebooks/ directory.
+    """
+    root = Path(config["dataset"]["root"])
+
+    if not root.is_absolute():
+        # loader.py:
+        # project/src/swat_gnn/data/loader.py
+        #
+        # parents[0] = data
+        # parents[1] = swat_gnn
+        # parents[2] = src
+        # parents[3] = project root
+
+        project_root = Path(__file__).resolve().parents[3]
+        root = project_root / root
+
+    return root.resolve()
+
+
 def load_sensor_file(path: Path) -> pd.DataFrame:
-    """Load one HAI sensor CSV."""
+    """Load a sensor CSV file and parse its timestamp column."""
     df = pd.read_csv(path)
 
     if "timestamp" not in df.columns:
@@ -24,7 +48,7 @@ def load_sensor_file(path: Path) -> pd.DataFrame:
 
 def load_training_data(config: dict) -> list[pd.DataFrame]:
     """Load the normal training segments."""
-    root = Path(config["dataset"]["root"])
+    root = get_dataset_root(config)
 
     return [
         load_sensor_file(root / filename)
@@ -34,7 +58,7 @@ def load_training_data(config: dict) -> list[pd.DataFrame]:
 
 def load_validation_data(config: dict) -> list[pd.DataFrame]:
     """Load the normal validation segments."""
-    root = Path(config["dataset"]["root"])
+    root = get_dataset_root(config)
 
     return [
         load_sensor_file(root / filename)
@@ -42,13 +66,15 @@ def load_validation_data(config: dict) -> list[pd.DataFrame]:
     ]
 
 
-def load_test_data(config: dict) -> tuple[list[pd.DataFrame], list[pd.Series]]:
+def load_test_data(
+    config: dict,
+) -> tuple[list[pd.DataFrame], list[pd.Series]]:
     """
     Load test sensor data and corresponding labels.
 
     HAI test labels are aligned with sensor observations by row position.
     """
-    root = Path(config["dataset"]["root"])
+    root = get_dataset_root(config)
 
     sensor_files = config["test"]["sensor_files"]
     label_files = config["test"]["label_files"]
@@ -58,6 +84,7 @@ def load_test_data(config: dict) -> tuple[list[pd.DataFrame], list[pd.Series]]:
 
     for sensor_file, label_file in zip(sensor_files, label_files):
         sensor_df = load_sensor_file(root / sensor_file)
+
         label_df = pd.read_csv(root / label_file)
 
         if "label" not in label_df.columns:
