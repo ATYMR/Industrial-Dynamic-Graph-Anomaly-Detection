@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 
 import json
 import random
@@ -25,7 +26,7 @@ from swat_gnn.evaluation.metrics import compute_binary_metrics
 # Configuration
 # ============================================================
 
-SEED = 42
+SEED = int(os.environ.get("EXPERIMENT_SEED", "42"))
 
 SEQUENCE_LENGTH = 60
 

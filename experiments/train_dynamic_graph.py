@@ -36,8 +36,8 @@ from swat_gnn.models.dynamic_graph_autoencoder import (
 # =====================================================================
 # Configuration
 # =====================================================================
-
-SEED = 42
+import os
+SEED = int(os.environ.get("EXPERIMENT_SEED", "42"))
 
 SEQUENCE_LENGTH = 60
 
