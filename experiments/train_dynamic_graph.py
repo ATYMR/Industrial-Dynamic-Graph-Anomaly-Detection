@@ -51,7 +51,7 @@ TEMPORAL_HIDDEN_DIM = 32
 EMBEDDING_DIM = 32
 GAT_HIDDEN_DIM = 64
 GAT_HEADS = 4
-GRAPH_K = 5
+GRAPH_K = int(os.environ.get("GRAPH_K", "5"))
 
 LEARNING_RATE = 1e-3
 
@@ -94,17 +94,17 @@ FIGURE_DIR = (
 
 CHECKPOINT_PATH = (
     CHECKPOINT_DIR
-    / "dynamic_graph_autoencoder_best.pt"
+    / f"dynamic_graph_autoencoder_k{GRAPH_K}_best.pt"
 )
 
 RESULTS_PATH = (
     TABLE_DIR
-    / "dynamic_graph_autoencoder_results.json"
+    / f"dynamic_graph_autoencoder_k{GRAPH_K}_results.json"
 )
 
 HISTORY_PATH = (
     TABLE_DIR
-    / "dynamic_graph_autoencoder_history.json"
+    / f"dynamic_graph_autoencoder_k{GRAPH_K}_history.json"
 )
 
 
@@ -1246,3 +1246,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+
