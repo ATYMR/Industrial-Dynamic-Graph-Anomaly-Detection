@@ -194,7 +194,7 @@ def analyze_k(k, checkpoint_path, test_segments):
         "k": k,
         "checkpoint": str(checkpoint_path),
         "checkpoint_epoch": int(checkpoint.get("epoch", -1)),
-        "total_windows": int(sum(segment_lengths)),
+        "total_windows": int(global_change_count + 2),
         "valid_transitions": int(global_change_count),
         "mean_graph_change": float(np.mean(changes)),
         "median_graph_change": float(np.median(changes)),
