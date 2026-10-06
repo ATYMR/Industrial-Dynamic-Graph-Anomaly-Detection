@@ -17,7 +17,7 @@ from swat_gnn.data.temporal_dataset import TemporalWindowDataset
 
 from train_static_temporal_graph import (
     StaticTemporalGraphAutoencoder,
-    build_fixed_correlation_graph,
+    load_fixed_cosine_graph,
     calculate_anomaly_scores,
 )
 
@@ -45,6 +45,10 @@ DEVICE = torch.device(
 
 RESULTS_DIR = Path("results/tables")
 CHECKPOINT_DIR = Path("results/checkpoints")
+
+GRAPH_PATH = Path(
+    "results/tables/fixed_cosine_graph.pt"
+)
 
 CHECKPOINTS = {
     "static_temporal_graph":
@@ -283,14 +287,18 @@ def main():
     )
 
     # --------------------------------------------------------
-    # Reconstruct exact fixed graph
+    # Load exact fixed cosine graph
     # --------------------------------------------------------
 
-    static_edge_index = (
-        build_fixed_correlation_graph(
-            training_scaled,
-            k=GRAPH_K,
-        )
+    static_edge_index = load_fixed_cosine_graph(
+        path=GRAPH_PATH,
+        num_nodes=len(variable_features),
+        k=GRAPH_K,
+    )
+
+    print(
+        f"Static graph edges: "
+        f"{static_edge_index.shape[1]}"
     )
 
     # --------------------------------------------------------
@@ -416,20 +424,7 @@ def main():
     )
 
     # --------------------------------------------------------
-    # IMPORTANT:
-    # This matches the ACTUAL constructor in
-    # swat_gnn.models.dynamic_graph_autoencoder
-    #
-    # __init__(
-    #     sequence_length=60,
-    #     num_nodes=66,
-    #     temporal_hidden_dim=32,
-    #     embedding_dim=32,
-    #     gat_hidden_dim=64,
-    #     gat_heads=4,
-    #     k=5,
-    #     dropout=0.0
-    # )
+    # Create model
     # --------------------------------------------------------
 
     dynamic_model = (
@@ -476,6 +471,11 @@ def main():
     print(
         f"Checkpoint epoch: "
         f"{dynamic_checkpoint['epoch']}"
+    )
+
+    print(
+        f"Checkpoint config: "
+        f"{dynamic_checkpoint['config']}"
     )
 
     # --------------------------------------------------------
@@ -530,73 +530,13 @@ def main():
         dynamic_threshold,
     )
 
-    # ========================================================
-    # Save metadata
-    # ========================================================
-
-    metadata = {
-        "sequence_length": SEQUENCE_LENGTH,
-        "batch_size": BATCH_SIZE,
-        "graph_k": GRAPH_K,
-        "variable_features": len(
-            variable_features
-        ),
-        "validation_windows": len(
-            validation_dataset
-        ),
-        "test_windows": len(
-            test_dataset
-        ),
-        "static_temporal_checkpoint": str(
-            CHECKPOINTS[
-                "static_temporal_graph"
-            ]
-        ),
-        "dynamic_graph_checkpoint": str(
-            CHECKPOINTS[
-                "dynamic_graph"
-            ]
-        ),
-        "static_temporal_threshold": (
-            static_threshold
-        ),
-        "dynamic_graph_threshold": (
-            dynamic_threshold
-        ),
-    }
-
-    metadata_path = (
-        RESULTS_DIR
-        / "saved_score_metadata.json"
-    )
-
-    with open(
-        metadata_path,
-        "w",
-        encoding="utf-8",
-    ) as f:
-
-        json.dump(
-            metadata,
-            f,
-            indent=2,
-        )
-
-    print(
-        "\nSaved metadata:"
-    )
-
-    print(
-        metadata_path
-    )
-
     print(
         "\n"
         + "=" * 70
     )
 
     print(
-        "SCORE GENERATION COMPLETE"
+        "DONE"
     )
 
     print(
